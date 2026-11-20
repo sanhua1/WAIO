@@ -73,6 +73,9 @@ internal sealed class GlassSurface
 
     public Window Window { get; }
 
+    /// <summary>显示时先藏起来、玻璃画好再露出(由 <see cref="Glass.Attach"/> 设置)。</summary>
+    public GlassReveal Reveal { get; set; } = null!;
+
     public nint Hwnd { get; }
 
     public bool Popup { get; }

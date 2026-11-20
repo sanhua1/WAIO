@@ -96,9 +96,15 @@ public static class Glass
     {
         var surface = new GlassSurface(window, popup);
         Surfaces.Add(surface);
+        surface.Reveal = new GlassReveal(surface.Hwnd, _ui!, () => BeginReveal(surface), _logger);
 
         window.AppWindow.Changed += (_, e) =>
         {
+            if (surface.Reveal.IsPending)
+            {
+                return; // 正在"藏着等背景",由 BeginReveal 统一处理
+            }
+
             if (e.DidVisibilityChange)
             {
                 Sync(surface, refresh: true);
@@ -108,11 +114,18 @@ public static class Glass
                 Sync(surface, refresh: false); // 背景是"排除了 WAIO 窗口"的整屏画面,移动时直接用它重画
             }
         };
-        window.Activated += (_, e) => Sync(surface, refresh: e.WindowActivationState != WindowActivationState.Deactivated);
+        window.Activated += (_, e) =>
+        {
+            if (!surface.Reveal.IsPending)
+            {
+                Sync(surface, refresh: e.WindowActivationState != WindowActivationState.Deactivated);
+            }
+        };
         window.Closed += (_, _) =>
         {
             Surfaces.Remove(surface);
             surface.Capture = null;
+            surface.Reveal.Finish("关闭");
         };
         if (window.Content is FrameworkElement root)
         {
@@ -193,6 +206,26 @@ public static class Glass
         surface.Render();
     }
 
+    /// <summary>
+    /// 窗口正要显示(已被 <see cref="GlassReveal"/> 藏起来):立即取一帧新背景。
+    /// 这块屏以前取到过背景的,先用旧背景画好就露出来(省掉等截屏第一帧的几十毫秒),新背景到了再重画;
+    /// 色调浓度高时新旧几乎看不出差别。从没取到过(开机后第一次)才等新背景。
+    /// 窗口藏着不参与合成,取到的画面里本来就没有它;没能开始取(暂停中等)就用已有背景画好直接露出来。
+    /// </summary>
+    private static void BeginReveal(GlassSurface surface)
+    {
+        if (!surface.Reveal.IsPending)
+        {
+            return;
+        }
+
+        Sync(surface, refresh: true);
+        if (surface.Capture is not { IsBusy: true } || surface.Capture.Latest is not null)
+        {
+            surface.Reveal.Drawn();
+        }
+    }
+
     /// <summary>轮询:刚变可见、换了显示器的窗口补一次同步;开着的窗口背景过期就重新取。</summary>
     private static void Poll()
     {
@@ -201,7 +234,7 @@ public static class Glass
             var visible = surface.IsVisible;
             var justShown = visible && !surface.WasVisible;
             surface.WasVisible = visible;
-            if (!visible)
+            if (!visible || surface.Reveal.IsPending)
             {
                 continue;
             }
@@ -236,6 +269,7 @@ public static class Glass
             if (surface.Capture == capture)
             {
                 surface.Render();
+                surface.Reveal.Drawn(); // 藏着等背景的窗口:玻璃画好了,等 XAML 交两帧就露出来
             }
         }
     }
