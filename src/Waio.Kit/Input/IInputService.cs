@@ -59,6 +59,7 @@ public interface IRealtimeKeyFilter
 
     /// <summary>
     /// 输入引擎认为期间的"抬起"事件已经丢失时调用(锁屏解锁、切换会话后,在下一个按键事件之前,钩子线程上;ADR-0013)。
+    /// 远程桌面程序切到前台、引擎开始把按键让给它时也会调用(ADR-0033)。
     /// 过滤器应清掉"某键按住中"之类的状态,并用 <paramref name="emitter"/> 释放自己发出、还没抬起的键。默认什么都不做。
     /// </summary>
     /// <param name="emitter">仅在本次调用期间有效,不得保存。</param>

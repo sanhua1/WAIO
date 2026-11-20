@@ -8,7 +8,7 @@ using Waio.UI;
 namespace Waio.Shell.Settings;
 
 /// <summary>
-/// 系统快捷键页(ADR-0029):按分组列出 Windows 默认快捷键,标出哪些被 WAIO 占用,
+/// 系统快捷键页(ADR-0029,用词参考 MAIO 0.3.0):按分组列出 Windows 默认快捷键,标出哪些由 WAIO 接管,
 /// 被占用的可以"恢复系统功能"(停用占用它的 WAIO 快捷键)。
 /// </summary>
 internal sealed partial class SystemShortcutsPage : Page
@@ -24,6 +24,14 @@ internal sealed partial class SystemShortcutsPage : Page
     {
         _context = (ShellContext)e.Parameter;
         _context.BindingsChanged += OnBindingsChanged;
+        IntroHost.Content = SettingsUi.PageIntro(
+            "", // Keyboard
+            "WAIO 快捷键优先",
+            "WAIO 的快捷键和系统快捷键相同时,WAIO 运行期间按下只会触发 WAIO 的功能,系统功能不会触发,这里显示为「由 WAIO 接管」。",
+            "接管只在 WAIO 运行时有效,WAIO 不修改任何系统设置。",
+            "停用或删除那条 WAIO 快捷键、关掉它所属的功能,或者退出 WAIO,系统快捷键立即恢复工作。",
+            "想把某个组合还给系统,点那一行的「恢复系统功能」:占用它的 WAIO 快捷键会被停用(不删除,随时可以重新打开)。",
+            "Win+L、Ctrl+Alt+Del 等系统保留键 WAIO 接管不了,标为「系统保留」。");
         Refresh();
     }
 
@@ -40,10 +48,10 @@ internal sealed partial class SystemShortcutsPage : Page
         EngineBar.IsOpen = !_context.IsInputRunning;
 
         var usages = _context.SystemShortcutUsage();
-        var taken = usages.Count(u => u.State != SystemShortcutState.System);
+        var taken = usages.Count(u => u.State is SystemShortcutState.TakenOver or SystemShortcutState.PartlyTakenOver);
         Summary.Text = taken == 0
-            ? $"共 {usages.Count} 个系统快捷键,WAIO 一个都没有占用。"
-            : $"共 {usages.Count} 个系统快捷键,其中 {taken} 个被 WAIO 占用。";
+            ? $"共 {usages.Count} 个系统快捷键,WAIO 一个都没有接管。"
+            : $"共 {usages.Count} 个系统快捷键,其中 {taken} 个现在由 WAIO 接管。";
 
         var query = Search.Text.Trim();
         var shown = usages.Where(u => (!OnlyTaken.IsOn || u.State != SystemShortcutState.System) && Matches(u, query)).ToList();
@@ -62,7 +70,7 @@ internal sealed partial class SystemShortcutsPage : Page
         }
 
         EmptyText.Visibility = shown.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        EmptyText.Text = OnlyTaken.IsOn && query.Length == 0 ? "WAIO 没有占用任何系统快捷键" : "没有匹配的系统快捷键";
+        EmptyText.Text = OnlyTaken.IsOn && query.Length == 0 ? "WAIO 的快捷键和系统快捷键都不相同" : "没有匹配的系统快捷键";
     }
 
     private bool Matches(SystemShortcutUsage usage, string query)
@@ -86,7 +94,7 @@ internal sealed partial class SystemShortcutsPage : Page
         caps.Width = 230;
 
         var text = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Spacing = 2 };
-        text.Children.Add(new TextBlock { Text = s.Function, TextWrapping = TextWrapping.Wrap });
+        text.Children.Add(new TextBlock { Text = Headline(usage), TextWrapping = TextWrapping.Wrap });
         if (Detail(usage) is { } detail)
         {
             var hint = SettingsUi.Hint(detail);
@@ -111,7 +119,7 @@ internal sealed partial class SystemShortcutsPage : Page
         if (usage.State != SystemShortcutState.System)
         {
             var restore = SettingsUi.Button("恢复系统功能", () => _ = ShortcutUi.RunAsync(XamlRoot, () => _context.RestoreSystemShortcutAsync(s.Chord)));
-            ToolTipService.SetToolTip(restore, "停用占用这个组合的 WAIO 快捷键(不删除,可以在\"快捷键\"页重新打开)");
+            ToolTipService.SetToolTip(restore, "停用占用这个组合的 WAIO 快捷键(不删除,可以在\"WAIO 快捷键\"页重新打开)");
             Place(grid, restore, 3);
         }
 
@@ -120,25 +128,30 @@ internal sealed partial class SystemShortcutsPage : Page
         return card;
     }
 
-    /// <summary>第二行:谁占用了它;没被占用时显示补充说明。</summary>
-    private string? Detail(SystemShortcutUsage usage)
-    {
-        if (usage.Bindings.Count == 0)
-        {
-            return usage.Shortcut.Note;
-        }
+    /// <summary>
+    /// 第一行(参考 MAIO):被接管的写"现在触发 WAIO:…",让人一眼看出按下去会发生什么;其余写系统功能。
+    /// </summary>
+    private string Headline(SystemShortcutUsage usage) => usage.State is SystemShortcutState.TakenOver or SystemShortcutState.PartlyTakenOver
+        ? "现在触发 WAIO:" + Owners(usage)
+        : usage.Shortcut.Function;
 
-        var owners = string.Join("、", usage.Bindings.Select(b =>
-            $"「{ShortcutUi.Title(_context, b)}」" + (b.Scope is Waio.Kit.Input.ProcessScope scope ? $"({ShortcutUi.ScopeText(scope)})" : "")));
-        return $"被 WAIO 的 {owners} 占用";
-    }
+    /// <summary>第二行:被接管的写"系统原本是:…";和 WAIO 冲突的写谁也会触发;其余显示补充说明。</summary>
+    private string? Detail(SystemShortcutUsage usage) => usage.State switch
+    {
+        SystemShortcutState.TakenOver or SystemShortcutState.PartlyTakenOver => "系统原本是:" + usage.Shortcut.Function,
+        SystemShortcutState.Clash => $"WAIO 的 {Owners(usage)} 也绑了它:按下时两边都会触发",
+        _ => usage.Shortcut.Note,
+    };
+
+    private string Owners(SystemShortcutUsage usage) => string.Join("、", usage.Bindings.Select(b =>
+        $"「{ShortcutUi.Title(_context, b)}」" + (b.Scope is Waio.Kit.Input.ProcessScope scope ? $"({ShortcutUi.ScopeText(scope)})" : "")));
 
     private static Border? Badge(SystemShortcutUsage usage)
     {
         (string Text, SettingsUi.Tone Tone, string Tip)? badge = usage.State switch
         {
-            SystemShortcutState.TakenOver => ("WAIO 接管", SettingsUi.Tone.Caution, "WAIO 运行时按这个组合执行 WAIO 的命令,系统功能暂停"),
-            SystemShortcutState.PartlyTakenOver => ("部分接管", SettingsUi.Tone.Neutral, "只在指定的程序里由 WAIO 接管,其他程序里系统功能照常"),
+            SystemShortcutState.TakenOver => ("由 WAIO 接管", SettingsUi.Tone.Success, "WAIO 运行时只触发 WAIO;退出 WAIO 或停用那条快捷键后,系统快捷键恢复工作"),
+            SystemShortcutState.PartlyTakenOver => ("部分由 WAIO 接管", SettingsUi.Tone.Neutral, "只在那条快捷键的生效范围内由 WAIO 接管,其他程序里系统功能照常"),
             SystemShortcutState.Clash => ("冲突", SettingsUi.Tone.Critical, "这是系统保留键,WAIO 拦不住:按下时系统功能和 WAIO 命令都会触发。请给那条快捷键换个组合"),
             _ when !usage.Shortcut.CanOverride => ("系统保留", SettingsUi.Tone.Neutral, usage.Shortcut.Note ?? "WAIO 接管不了这个组合"),
             _ => null,

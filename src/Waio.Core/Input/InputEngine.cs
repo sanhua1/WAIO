@@ -134,6 +134,9 @@ public sealed class InputEngine : IInputService, IAsyncDisposable
     /// <summary>设置自定义修饰键(ADR-0012),立即生效。</summary>
     public void SetCustomModifiers(IEnumerable<string> keys) => _pipeline.SetCustomModifiers(keys);
 
+    /// <summary>远程桌面让出按键(ADR-0033):这些程序(进程名,不含 .exe)在前台时,快捷键和改键都不生效。空 = 关闭。立即生效。</summary>
+    public void SetPassthroughApps(IEnumerable<string> processNames) => _pipeline.SetPassthroughApps(processNames);
+
     public IDisposable RegisterKeyFilter(IRealtimeKeyFilter filter) => _pipeline.AddFilter(filter);
 
     public IKeyboardSession BeginKeyboardSession(KeyboardSessionOptions options) => _pipeline.BeginSession(options);

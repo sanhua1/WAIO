@@ -175,6 +175,11 @@ internal sealed partial class InputPipeline
                 EndSession(session);
             }
         }
+        else if (EnterOrStayPassthrough())
+        {
+            // 远程桌面在前台(ADR-0033):原样放行;只有让出之前就被吞掉的键,长按重复继续吞(抬起由 upOfConsumed 吞)
+            consume = raw.IsDown && isRepeat && _consumed.Contains(raw.VkCode);
+        }
         else
         {
             // 过滤器看到所有事件(按下/抬起/重复),改键靠它;快捷键匹配只看首次按下

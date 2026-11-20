@@ -68,7 +68,7 @@
                         <FontIcon Glyph="&#xE713;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="快捷键" Tag="bindings">
+                <NavigationViewItem Content="WAIO 快捷键" Tag="bindings">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE765;" />
                     </NavigationViewItem.Icon>

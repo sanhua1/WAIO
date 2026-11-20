@@ -38,11 +38,11 @@ internal sealed partial class KeyMappingSettingsView
         rules.RemoveAll(r => r is null);
         var issues = RuleIssues();
 
-        yield return SettingsUi.Section("改键与双功能键");
-        yield return SettingsUi.Card(
-            "说明",
-            "改键:按下左边的键,发出右边的键(长按、组合键里也一样)。"
-            + "双功能键:单独轻点发出一个键,按住并配合别的键时当作另一个键——例:右 Ctrl 轻点 = Menu、按住 = Ctrl");
+        yield return SettingsUi.PageIntro(
+            "", // Switch
+            "改键与双功能键",
+            "把一个键换成另一个键,或者让它轻点和按住时各是一个键。例如右 Ctrl 轻点 = 菜单键、按住 = Ctrl。");
+        yield return SettingsUi.Section("规则");
 
         for (var i = 0; i < rules.Count; i++)
         {
@@ -50,6 +50,11 @@ internal sealed partial class KeyMappingSettingsView
         }
 
         yield return AddRuleCard();
+        yield return SettingsUi.Notes(
+            "对所有键盘生效",
+            "改成:按下左边的键,发出右边的键;长按、组合键里也一样",
+            "轻点 / 按住:单独轻点发出一个键,按住并配合别的键时当作另一个键",
+            "有问题的规则(重复的键、改成自己等)照样保存,但不生效,卡片上会写明原因");
     }
 
     /// <summary>

@@ -25,7 +25,7 @@ CapsLock 本身完全失效(不切换大写锁定);按住它时整个键盘换�
 
 ## 设置
 
-设置页「按键映射」图形化编辑,改完立即生效。文件:`%APPDATA%\WAIO\config\features\keymap.json`。
+设置页「按键映射」图形化编辑,改完立即生效。分两个标签:「Super Caps」(开关和层里的键,默认打开这一页)、「改键与双功能键」(规则列表)。文件:`%APPDATA%\WAIO\config\features\keymap.json`。
 
 ## 所需能力
 

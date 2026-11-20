@@ -56,10 +56,15 @@ internal sealed class ClipboardSettingsView
             SettingsUi.Section("面板"),
             SettingsUi.Card(
                 "面板里的按键",
-                "↑↓ 选择 · ⏎ 粘贴 · ⇧⏎ 纯文本 · Ctrl+1~9 快速粘贴 · 空格 预览 · Ctrl+P 固定 · Del 删除 · Ctrl+F 搜索 · Esc 关闭"),
+                SettingsUi.Lines(
+                    "↑↓ 选择,⏎ 粘贴,⇧⏎ 粘贴纯文本,Ctrl+1~9 快速粘贴第几条",
+                    "空格 预览,Ctrl+P 固定,Del 删除",
+                    "Ctrl+F 搜索,Esc 关闭")),
             SettingsUi.Card(
                 "弹出位置",
-                "文字光标处:在正在输入的位置下方弹出(浏览器、终端也支持;个别程序拿不到光标时按下一项处理)",
+                SettingsUi.Lines(
+                    "文字光标处:在正在输入的位置下方弹出,浏览器、终端也支持",
+                    "个别程序拿不到光标位置,这时按下一项处理"),
                 SettingsUi.Choice(Positions, v.PopupPosition, x =>
                 {
                     fallback.Visibility = Visible(x == PopupPosition.Caret);
@@ -68,7 +73,9 @@ internal sealed class ClipboardSettingsView
             fallback,
             SettingsUi.Card(
                 "搜索方式",
-                "按 Ctrl+F 才搜索:打开后方向键直接选择,用输入法打中文时确认拼音的回车不会误粘贴。直接打字搜索:打开就能输入,回车立即粘贴",
+                SettingsUi.Lines(
+                    "按 Ctrl+F 才搜索:打开后方向键直接选择;用输入法打中文时,确认拼音的回车不会误粘贴",
+                    "直接打字搜索:打开就能输入,回车立即粘贴"),
                 SettingsUi.Choice(SearchModes, v.SearchMode, x => Save(s => s.SearchMode = x))),
             SettingsUi.Card(
                 "空格预览",
@@ -77,7 +84,9 @@ internal sealed class ClipboardSettingsView
             SettingsUi.Section("粘贴"),
             SettingsUi.Card(
                 "选中后直接粘贴",
-                "打开:回车后自动切回原来的程序并粘贴。关闭:只放进剪贴板,需要自己按 Ctrl+V",
+                SettingsUi.Lines(
+                    "打开:回车后自动切回原来的程序并粘贴",
+                    "关闭:只放进剪贴板,需要自己按 Ctrl+V"),
                 SettingsUi.Toggle(v.PasteDirectly, x => Save(s => s.PasteDirectly = x))),
             SettingsUi.Card(
                 "粘贴过的条目移到最前",
@@ -95,12 +104,16 @@ internal sealed class ClipboardSettingsView
                 SettingsUi.Toggle(v.RecordFiles, x => Save(s => s.RecordFiles = x))),
             SettingsUi.Card(
                 "记录密码管理器标记的内容",
-                "1Password、KeePass 等会把复制的密码标记为\"不要记录\"。打开则照样记录(数据只存在本机,未加密)",
+                SettingsUi.Lines(
+                    "1Password、KeePass 等会把复制的密码标记为\"不要记录\"",
+                    "打开后照样记录;数据只存在本机,没有加密"),
                 SettingsUi.Toggle(!v.RespectExclusionFormats, x => Save(s => s.RespectExclusionFormats = !x))),
             SettingsUi.Section("存储"),
             SettingsUi.Card(
                 "存储上限",
-                "历史(不含固定的条目)超过上限时,自动删除最久没用过的。选\"永久保留\"则不自动删除",
+                SettingsUi.Lines(
+                    "历史(不含固定的条目)超过上限时,自动删除最久没用过的",
+                    "选\"永久保留\"则不自动删除"),
                 SettingsUi.Choice(Limits, v.StorageLimit, x => Save(s => s.StorageLimit = x))),
             ClearHistoryCard(),
             SettingsUi.Card(

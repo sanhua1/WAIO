@@ -39,7 +39,13 @@ public sealed class ScreenshotFeature(IFeatureContext context, bool prewarm) : I
     public static FeatureManifest Manifest { get; } = new(
         "screenshot",
         "截图",
-        "按 Win+C 冻结屏幕后框选,自动识别窗口(按住 Ctrl 识别控件),可以取色、标注、贴图、识别文字(Ctrl+O)、翻译(Ctrl+T)、长截图(Ctrl+L)、录屏(Ctrl+R,或直接按 Alt+F3);Ctrl+Alt+F2 直接录鼠标所在的整块屏幕(画面 + 系统声音 + 麦克风,再按一次结束并选择保留哪些声音)。截图自动复制,并保存在截图历史里;Alt+F2 把剪贴板内容贴到屏幕上。",
+        """
+        截图、标注、贴图、识别文字和录屏都在这里:
+        按 Win+C 冻结屏幕后框选,自动识别窗口(按住 Ctrl 识别控件);可以取色、标注
+        截图时 Ctrl+P 贴图、Ctrl+O 识别文字、Ctrl+T 翻译、Ctrl+L 长截图、Ctrl+R 录屏
+        Alt+F3 直接录屏;Ctrl+Alt+F2 录鼠标所在的整块屏幕(画面 + 系统声音 + 麦克风)
+        截图自动复制并保存到截图历史;Alt+F2 把剪贴板内容贴到屏幕上
+        """,
         "", // Segoe Fluent Icons: Camera
         Capability.ScreenCapture,
         [

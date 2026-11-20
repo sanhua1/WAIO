@@ -43,17 +43,24 @@ internal sealed partial class LauncherSettingsView
             SettingsUi.Section("面板"),
             SettingsUi.Card(
                 "面板里的按键",
-                "↑↓ 选择 · ⏎ 打开 · Ctrl+⏎ 打开文件位置 · Ctrl+C 复制路径 · Ctrl+1~9 打开第几项 · Tab 切换来源 · Esc 先清空再关闭。"
-                + "鼠标:单击选中、双击打开,文件和文件夹可以直接拖到别的程序里"),
+                SettingsUi.Lines(
+                    "↑↓ 选择,⏎ 打开,Ctrl+1~9 打开第几项",
+                    "Ctrl+⏎ 打开文件位置,Ctrl+C 复制路径",
+                    "Tab 切换来源,Esc 先清空再关闭",
+                    "鼠标:单击选中、双击打开,文件和文件夹可以直接拖到别的程序里")),
             SettingsUi.Card(
-                "面板宽度", "占当前显示器的比例(下次打开生效)。屏幕很小或很大时会自动限制在合适的范围,保证列表和预览放得下",
+                "面板宽度",
+                SettingsUi.Lines("占当前显示器的比例,下次打开生效", "屏幕很小或很大时会自动限制在合适的范围,保证列表和预览放得下"),
                 SettingsUi.Choice(Percents, Nearest(Percents, v.PanelWidthPercent), x => Save(s => s.PanelWidthPercent = x))),
             SettingsUi.Card(
                 "面板高度", "占当前显示器的比例(下次打开生效)",
                 SettingsUi.Choice(Percents, Nearest(Percents, v.PanelHeightPercent), x => Save(s => s.PanelHeightPercent = x))),
             SettingsUi.Card(
                 "搜索方式",
-                "应用名、拼音全拼、首字母都能搜:wx、weixin、微信 都能找到微信。前缀 a + 空格 只搜应用;g / bd / bi / gh + 空格 直接网页搜索"),
+                SettingsUi.Lines(
+                    "应用名、拼音全拼、首字母都能搜:wx、weixin、微信 都能找到微信",
+                    "前缀 a + 空格 只搜应用",
+                    "g / bd / bi / gh + 空格 直接网页搜索")),
             SettingsUi.Card(
                 "关闭后保留输入", "这段时间内再打开,还是上次的输入和选中项",
                 SettingsUi.Choice(KeepOptions, Nearest(KeepOptions, v.KeepQuerySeconds), x => Save(s => s.KeepQuerySeconds = x))),
@@ -114,7 +121,11 @@ internal sealed partial class LauncherSettingsView
         });
 
         var card = SettingsUi.Card(
-            "搜索引擎", "每行一个:名称 | 关键词 | 网址。网址里写 {query} 的地方换成输入的内容,例如 知乎 | zh | https://www.zhihu.com/search?q={query}",
+            "搜索引擎",
+            SettingsUi.Lines(
+                "每行一个:名称 | 关键词 | 网址",
+                "网址里写 {query} 的地方换成输入的内容",
+                "例如 知乎 | zh | https://www.zhihu.com/search?q={query}"),
             save);
         return SettingsUi.Stack(card, box, status);
     }

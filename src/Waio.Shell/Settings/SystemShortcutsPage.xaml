@@ -13,9 +13,12 @@
             <TextBlock Text="系统快捷键" Style="{StaticResource TitleTextBlockStyle}" />
             <TextBlock
                 Margin="0,2,0,12"
-                Text="Windows 自带的快捷键。WAIO 的快捷键用了其中某个组合时,WAIO 运行期间由 WAIO 接管、系统功能暂停;不再占用(停用、删除、功能关闭或退出 WAIO)就自动恢复。WAIO 不修改任何系统设置。"
+                Text="Windows 自带的快捷键,以及其中哪些现在由 WAIO 接管。"
                 TextWrapping="Wrap"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+            <!-- "WAIO 快捷键优先"的说明(参考 MAIO 0.3.0),由代码生成 -->
+            <ContentControl x:Name="IntroHost" HorizontalContentAlignment="Stretch" Margin="0,0,0,12" />
 
             <InfoBar
                 x:Name="EngineBar"
@@ -37,8 +40,8 @@
                 <ToggleSwitch
                     x:Name="OnlyTaken"
                     Grid.Column="1"
-                    OnContent="只看被 WAIO 占用的"
-                    OffContent="只看被 WAIO 占用的"
+                    OnContent="只看和 WAIO 相同的"
+                    OffContent="只看和 WAIO 相同的"
                     Toggled="OnFilterChanged" />
             </Grid>
 

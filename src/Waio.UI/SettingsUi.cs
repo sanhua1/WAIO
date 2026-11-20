@@ -9,7 +9,7 @@ namespace Waio.UI;
 /// 设置窗口和各功能的设置页都用它,保证所有设置页长得一样。
 /// 卡片外壳用 XAML 字符串构造,这样颜色能用 <c>ThemeResource</c>,自动跟随深浅色、高对比度。
 /// </summary>
-public static class SettingsUi
+public static partial class SettingsUi
 {
     private const string Ns = "xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
         + "xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'";
@@ -102,6 +102,11 @@ public static class SettingsUi
         var text = (TextBlock)card.FindName("Description");
         text.Text = description ?? "";
         text.Visibility = string.IsNullOrEmpty(description) ? Visibility.Collapsed : Visibility.Visible;
+        if (description?.Contains('\n', StringComparison.Ordinal) == true)
+        {
+            ShowAsNotes(text, description); // 多行说明逐条显示(SettingsUi.Lines)
+        }
+
         ((ContentPresenter)card.FindName("Action")).Content = action;
         Cards.AddOrUpdate(card, Marker);
         return Waio.UI.Theming.GlassShape.Card(card);

@@ -82,6 +82,9 @@
                 </StackPanel>
             </Border>
 
+            <!-- 远程桌面(ADR-0033),代码里构建,修改后整体重建 -->
+            <ContentPresenter x:Name="RemoteDesktopHost" />
+
             <Border
                 x:Name="DiagnosticsCard"
                 Padding="16"

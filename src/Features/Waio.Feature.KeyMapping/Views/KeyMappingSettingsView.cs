@@ -6,8 +6,10 @@ using Waio.UI;
 namespace Waio.Feature.KeyMapping.Views;
 
 /// <summary>
-/// 按键映射的设置页(ADR-0010、ADR-0013):Super Caps 的开关和层里的按键(可改目标、删除、添加、恢复默认)。
-/// 以及改键/双功能键规则(<c>KeyMappingSettingsView.Rules.cs</c>)。每改一项立即保存,运行中的功能实时生效。
+/// 按键映射的设置页(ADR-0010、ADR-0013)。分两个标签(参考 MAIO 0.3.0 的按键映射设置,默认打开 Super Caps):
+/// 「Super Caps」开关和层里的按键(可改目标、删除、添加、恢复默认);
+/// 「改键与双功能键」规则(<c>KeyMappingSettingsView.Rules.cs</c>)。
+/// 每个标签顶部一句话说明用途,说明文字逐条分行。每改一项立即保存,运行中的功能实时生效。
 /// </summary>
 internal sealed partial class KeyMappingSettingsView
 {
@@ -46,6 +48,15 @@ internal sealed partial class KeyMappingSettingsView
     private readonly ContentControl _host = new() { HorizontalContentAlignment = HorizontalAlignment.Stretch };
     private KeyMappingSettings _value;
 
+    /// <summary>当前标签。重建界面(保存后刷新)时保持不变。</summary>
+    private Tab _tab = Tab.SuperCaps;
+
+    private enum Tab
+    {
+        SuperCaps,
+        Rules,
+    }
+
     private KeyMappingSettingsView(FeatureSettingsContext context)
     {
         _context = context;
@@ -59,9 +70,46 @@ internal sealed partial class KeyMappingSettingsView
 
     private void Build()
     {
+        IEnumerable<UIElement> page = _tab == Tab.SuperCaps ? SuperCapsPage() : RuleSection();
+        _host.Content = SettingsUi.Stack([
+            Tabs(),
+            .. page,
+            SettingsUi.Notes(
+                "键盘不好用时:\"暂停/恢复按键映射\"会临时停用全部映射(包括 Super Caps),可以在上方给它设一个快捷键",
+                "也可以从托盘退出 WAIO,所有映射立即失效"),
+        ]);
+    }
+
+    /// <summary>标签栏:Super Caps / 改键与双功能键。</summary>
+    private SelectorBar Tabs()
+    {
+        var bar = new SelectorBar { Margin = new Thickness(0, 16, 0, 4) };
+        foreach (var (tab, text) in new[] { (Tab.SuperCaps, "Super Caps"), (Tab.Rules, "改键与双功能键") })
+        {
+            var item = new SelectorBarItem { Text = text, Tag = tab };
+            bar.Items.Add(item);
+            if (tab == _tab)
+            {
+                bar.SelectedItem = item;
+            }
+        }
+
+        bar.SelectionChanged += (_, _) =>
+        {
+            if (bar.SelectedItem?.Tag is Tab tab && tab != _tab)
+            {
+                _tab = tab;
+                Build();
+            }
+        };
+        return bar;
+    }
+
+    private IEnumerable<UIElement> SuperCapsPage()
+    {
         var caps = Caps;
         caps.Mappings ??= [];
-        var mappingCards = new StackPanel { Spacing = 4, Visibility = Visible(caps.Enabled) };
+        var mappingCards = new StackPanel { Spacing = 4 };
         foreach (var mapping in caps.Mappings.Where(m => m is not null).ToList())
         {
             mappingCards.Children.Add(MappingCard(mapping));
@@ -76,26 +124,31 @@ internal sealed partial class KeyMappingSettingsView
                 SaveAndRebuild();
             })));
 
-        _host.Content = SettingsUi.Stack([
-            SettingsUi.Section("Super Caps"),
-            SettingsUi.Card(
-                "Super Caps",
-                "把 CapsLock 变成换层键:按住它,下面的键变成方向键等。CapsLock 本身完全失效,不再切换大小写(需要大写时按住 Shift;启用时大写锁定若开着会自动关掉)",
-                SettingsUi.Toggle(caps.Enabled, on =>
-                {
-                    Caps.Enabled = on;
-                    SaveAndRebuild(); // 规则区里"CapsLock 规则不生效"的提示随之变化
-                })),
-            SettingsUi.Card(
-                "可以和修饰键一起用",
-                "Caps + Shift + D = 向右选中 · Caps + Ctrl + A = 向左跳一个词 · Caps + Shift + X = 选到行首。没有映射的键按 Caps 时照常输入"),
-            mappingCards,
-            .. RuleSection(),
-            SettingsUi.Section("其他"),
-            SettingsUi.Card(
-                "键盘不好用时",
-                "\"暂停/恢复按键映射\"会临时停用全部映射(包括 Super Caps),可以在上方给它设一个快捷键;也可以从托盘退出 WAIO"),
-        ]);
+        yield return SettingsUi.PageIntro(
+            "", // KeyboardClassic
+            "Super Caps",
+            "把很少用的 CapsLock 变成功能键:按住它,键盘上的键临时变成第二套功能,手不用离开主键区就能移动光标、翻页。");
+        yield return SettingsUi.Card(
+            "开启 Super Caps",
+            SettingsUi.Lines(
+                "开启后 CapsLock 不再切换大小写,单独按下没有任何反应;需要大写时按住 Shift",
+                "开启时如果大写锁定正开着,会自动关掉"),
+            SettingsUi.Toggle(caps.Enabled, on =>
+            {
+                Caps.Enabled = on;
+                SaveAndRebuild(); // "改键与双功能键"里"CapsLock 规则不生效"的提示随之变化
+            }));
+        if (!caps.Enabled)
+        {
+            yield break;
+        }
+
+        yield return SettingsUi.Section("层里的键");
+        yield return mappingCards;
+        yield return SettingsUi.Notes(
+            "左边是按住 Caps 时要按的键,右边是它变成的键",
+            "可以同时按住 Shift、Ctrl 等修饰键,它们会叠加到输出上:Caps + Shift + D = 向右选中,Caps + Ctrl + A = 向左跳一个词",
+            "没设置的键按住 Caps 时照常输入");
     }
 
     private Border MappingCard(LayerKeySettings mapping)
@@ -209,6 +262,4 @@ internal sealed partial class KeyMappingSettingsView
             _context.Logger.LogError(ex, "保存按键映射设置失败");
         }
     }
-
-    private static Visibility Visible(bool visible) => visible ? Visibility.Visible : Visibility.Collapsed;
 }

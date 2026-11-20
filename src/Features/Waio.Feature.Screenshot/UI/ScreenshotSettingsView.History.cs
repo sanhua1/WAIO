@@ -62,7 +62,7 @@ internal sealed partial class ScreenshotSettingsView
         var oldest = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
         oldest.Children.Add(new TextBlock { Text = "删除最旧的", VerticalAlignment = VerticalAlignment.Center });
         oldest.Children.Add(megabytes);
-        oldest.Children.Add(new TextBlock { Text = "MB", VerticalAlignment = VerticalAlignment.Center });
+        oldest.Children.Add(SettingsUi.Hint("MB")); // 单位用次要色(参考 MAIO 0.3.0 的表单细节)
         oldest.Children.Add(SettingsUi.Button("删除…", () =>
         {
             var size = Math.Max(1, double.IsNaN(megabytes.Value) ? 1 : (long)megabytes.Value);
@@ -84,7 +84,7 @@ internal sealed partial class ScreenshotSettingsView
         row.Children.Add(oldest);
         row.Children.Add(before);
         row.Children.Add(all);
-        return SettingsUi.Card("手动清理", "收藏的截图不会被删除。删除后无法恢复。", row);
+        return SettingsUi.Card("手动清理", SettingsUi.Lines("收藏的截图不会被删除", "删除后无法恢复"), row);
     }
 
     private async Task CleanupAsync(string title, Func<IReadOnlyList<ScreenshotRecord>, IReadOnlyList<string>> select)

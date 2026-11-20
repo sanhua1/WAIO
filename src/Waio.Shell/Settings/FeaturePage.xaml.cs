@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using Waio.Core.Bindings;
 using Waio.Core.Host;
 using Waio.Kit.Features;
 using Waio.Kit.Input;
@@ -9,8 +10,7 @@ using Waio.UI;
 
 namespace Waio.Shell.Settings;
 
-/// <param name="ShowBindings">切到"快捷键"总表页。</param>
-internal sealed record FeaturePageArgs(ShellContext Context, FeatureManifest Manifest, Action ShowBindings);
+internal sealed record FeaturePageArgs(ShellContext Context, FeatureManifest Manifest);
 
 /// <summary>
 /// 一个功能的设置页(结构参考 MAIO 的 FeaturePane,ADR-0010):
@@ -38,7 +38,7 @@ internal sealed partial class FeaturePage : Page
         _args = (FeaturePageArgs)e.Parameter;
         Icon.Glyph = Manifest.IconGlyph;
         TitleText.Text = Manifest.DisplayName;
-        SummaryText.Text = Manifest.Summary;
+        ShowSummary();
 
         Body.Children.Clear();
         Body.Children.Add(EnableCard());
@@ -52,6 +52,20 @@ internal sealed partial class FeaturePage : Page
     {
         Context.Features.StatusChanged -= OnStatusChanged;
         Context.BindingsChanged -= OnBindingsChanged;
+    }
+
+    /// <summary>页头说明(参考 MAIO):第一行一句话说用途,后面每行一个要点,逐条显示。</summary>
+    private void ShowSummary()
+    {
+        var lines = Manifest.Summary.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        SummaryText.Text = lines.FirstOrDefault() ?? "";
+        SummaryNotes.Children.Clear();
+        if (lines.Length > 1)
+        {
+            var notes = SettingsUi.Notes(lines[1..]);
+            notes.Margin = new Thickness(0, 4, 0, 0);
+            SummaryNotes.Children.Add(notes);
+        }
     }
 
     // ---- 启用 ----
@@ -102,7 +116,7 @@ internal sealed partial class FeaturePage : Page
         _ => "",
     };
 
-    // ---- 快捷键(ADR-0011,参考 MAIO 的 FeatureShortcutsSection;和"快捷键"页是同一份数据) ----
+    // ---- 快捷键(ADR-0011,参考 MAIO 的 FeatureShortcutsSection;和"WAIO 快捷键"页是同一份数据) ----
 
     private void AddShortcuts()
     {
@@ -126,20 +140,11 @@ internal sealed partial class FeaturePage : Page
 
         _shortcuts.Children.Clear();
         var bindings = Context.Bindings.Bindings;
-        foreach (var command in Manifest.Commands)
+        var parameterized = Manifest.Commands.Where(BindingGroups.NeedsArguments).ToList();
+        foreach (var command in Manifest.Commands.Where(c => !BindingGroups.NeedsArguments(c)))
         {
+            // 无参数的命令:一个命令一行,直接点键帽录制;已有多条时每条一个键帽
             var mine = bindings.Where(b => b.Command == command.Id).ToList();
-            if (command.Parameters.Any(p => p.Required))
-            {
-                // 需要参数的命令(打开程序等):一个命令可以有很多条绑定,在编辑器里填参数
-                var add = SettingsUi.Button("添加…", () => _ = ShortcutUi.RunAsync(XamlRoot, () =>
-                    BindingEditorDialog.EditAsync(Context, BindingEditorDialog.NewBinding(command.Id), isNew: true, XamlRoot)));
-                var note = mine.Count == 0 ? "需要填写参数,点\"添加…\"" : $"已有 {mine.Count} 个,在\"快捷键\"页查看和编辑";
-                _shortcuts.Children.Add(SettingsUi.Card(command.Title, note, add));
-                continue;
-            }
-
-            // 无参数的命令:直接点键帽录制;已有多条时每条一个键帽
             var keys = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right };
             foreach (var binding in mine)
             {
@@ -156,12 +161,56 @@ internal sealed partial class FeaturePage : Page
                 keys.Children.Add(ShortcutUi.Recorder(Context, null, command.Id, XamlRoot).View);
             }
 
-            _shortcuts.Children.Add(SettingsUi.Card(command.Title, command.Id.Value, keys));
+            var scopes = mine.Select(b => b.Scope).OfType<ProcessScope>().Select(ShortcutUi.ScopeText).ToList();
+            var card = SettingsUi.Card(command.Title, scopes.Count > 0 ? string.Join(" · ", scopes) : null, keys);
+            if (mine.Count == 1)
+            {
+                card.DoubleTapped += (_, e) =>
+                {
+                    e.Handled = true;
+                    _ = BindingRow.EditAsync(Context, mine[0], XamlRoot);
+                };
+            }
+
+            _shortcuts.Children.Add(card);
         }
 
-        _shortcuts.Children.Add(SettingsUi.Card(
-            "全部快捷键", "点击键帽后按下新组合即可修改;单按 Backspace 清除,Esc 取消。生效范围等高级选项在\"快捷键\"页编辑",
-            SettingsUi.Button("打开快捷键页", _args.ShowBindings)));
+        // 需要参数的命令(打开程序、打开网页):已有的绑定逐条列出,双击或右侧菜单编辑;"添加…"在这里直接新建(同 MAIO)
+        foreach (var binding in bindings.Where(b => parameterized.Any(c => c.Id == b.Command))
+                     .OrderBy(b => parameterized.FindIndex(c => c.Id == b.Command)))
+        {
+            _shortcuts.Children.Add(BindingRow.Build(Context, binding, Manifest.IconGlyph, XamlRoot));
+        }
+
+        if (parameterized.Count > 0)
+        {
+            var adds = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(0, 4, 0, 0) };
+            foreach (var command in parameterized)
+            {
+                adds.Children.Add(SettingsUi.Button($"添加:{command.Title}…", () => _ = ShortcutUi.RunAsync(XamlRoot, () =>
+                    BindingEditorDialog.EditAsync(Context, BindingEditorDialog.NewBinding(command.Id), isNew: true, XamlRoot))));
+            }
+
+            _shortcuts.Children.Add(adds);
+        }
+
+        _shortcuts.Children.Add(SettingsUi.Notes(ShortcutNotes(parameterized.Count > 0)));
+    }
+
+    private string[] ShortcutNotes(bool hasParameterized)
+    {
+        if (!Context.IsInputRunning)
+        {
+            return ["按键钩子没有运行,快捷键暂不生效。"];
+        }
+
+        var notes = new List<string>
+        {
+            "点键帽后按下新的组合;录制时单按 Backspace 删除这个快捷键,Esc 取消。",
+            hasParameterized ? "双击一行或用右侧菜单编辑参数和生效范围。" : "双击一行可以设置生效范围(只在某些程序里生效)。",
+            "和「WAIO 快捷键」页是同一份设置,一边改了另一边立即同步。",
+        };
+        return [.. notes];
     }
 
     private void OnBindingsChanged() => DispatcherQueue.TryEnqueue(RefreshShortcuts);

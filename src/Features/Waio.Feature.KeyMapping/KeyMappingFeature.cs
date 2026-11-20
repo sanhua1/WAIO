@@ -19,7 +19,11 @@ public sealed class KeyMappingFeature(IFeatureContext context) : IFeature
     public static FeatureManifest Manifest { get; } = new(
         "keymap",
         "按键映射",
-        "Super Caps(CapsLock 换层)、改键、双功能键",
+        """
+        让键盘按你的习惯工作:
+        Super Caps:按住 CapsLock,键盘上的键临时变成方向键、翻页等第二套功能
+        改键与双功能键:把一个键换成另一个键,或者让它轻点和按住时各是一个键
+        """,
         "\uE765", // Segoe Fluent Icons: Keyboard
         Capability.InputHooks,
         [new CommandDescriptor(Toggle, "暂停/恢复按键映射")],

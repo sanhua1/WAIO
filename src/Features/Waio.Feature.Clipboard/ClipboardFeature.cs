@@ -26,7 +26,12 @@ public sealed class ClipboardFeature(IFeatureContext context) : IFeature
     public static FeatureManifest Manifest { get; } = new(
         "clipboard",
         "剪贴板",
-        "记录复制过的文字、图片、文件,按 Win+V 搜索、固定并粘贴",
+        """
+        复制过的东西都记下来,随时找回再粘贴:
+        按 Win+V 弹出历史,打字或 Ctrl+F 搜索,⏎ 粘贴到正在输入的位置
+        记录文字、富文本、图片和文件路径;常用的内容可以固定,不会被清理
+        空格预览,Ctrl+数字键 快速粘贴前几条
+        """,
         "", // Segoe Fluent Icons: Copy
         Capability.None,
         [new CommandDescriptor(Show, "显示剪贴板历史"), new CommandDescriptor(ClearHistory, "清空剪贴板历史(保留固定的)")],

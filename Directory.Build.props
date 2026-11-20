@@ -15,7 +15,7 @@
     <WindowsSdkPackageVersion>10.0.19041.57</WindowsSdkPackageVersion>
 
     <!-- 产品版本:exe 文件版本和安装包版本都取这里(ADR-0031);发版时改这一处 -->
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
 
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>

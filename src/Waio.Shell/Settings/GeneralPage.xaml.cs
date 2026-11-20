@@ -45,6 +45,7 @@ internal sealed partial class GeneralPage : Page
 
         RefreshDiagnostics();
         InitUpdateCard();
+        BuildRemoteDesktopCard();
 
         // 查询计划任务要起一个子进程,放到后台线程,不卡界面。
         // 上次查到的结果先显示出来并可用,查完有变化再改:否则每次切到这页开关都先变灰再亮,闪一下
@@ -97,6 +98,9 @@ internal sealed partial class GeneralPage : Page
             Application.Current.Exit();
         }
     }
+
+    private void BuildRemoteDesktopCard() =>
+        RemoteDesktopHost.Content = RemoteDesktopCard.Build(_context, XamlRoot, BuildRemoteDesktopCard);
 
     private void OnRefreshDiagnostics(object sender, RoutedEventArgs e) => RefreshDiagnostics();
 

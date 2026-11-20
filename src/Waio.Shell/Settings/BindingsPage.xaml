@@ -10,7 +10,7 @@
             <ColumnDefinition Width="*" MaxWidth="920" />
         </Grid.ColumnDefinitions>
         <StackPanel Spacing="4">
-            <TextBlock Text="快捷键" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock Text="WAIO 快捷键" Style="{StaticResource TitleTextBlockStyle}" />
             <TextBlock
                 Margin="0,2,0,12"
                 Text="点击键帽直接录制新组合;双击一行或用右侧菜单编辑命令、参数和生效范围。改动立即生效。"

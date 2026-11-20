@@ -14,8 +14,9 @@ namespace Waio.Feature.Translate.Views;
 internal sealed partial class TranslateSettingsView
 {
     private const string ServicesInfo =
-        "打开的翻译源会同时翻译,结果按列表顺序显示。免费源(Google、必应、腾讯交互翻译)使用网页接口,不需要 Key,但对方改版时可能失效。"
-        + "需要 Key 的源请点\"申请 Key\"获取;Key 只用当前 Windows 用户能解开的方式加密保存在本机,不会写进配置文件。";
+        "打开的翻译源会同时翻译,结果按列表顺序显示\n"
+        + "免费源(Google、必应、腾讯交互翻译)用网页接口,不需要 Key,但对方改版时可能失效\n"
+        + "需要 Key 的源点\"申请 Key\"获取;Key 用只有当前 Windows 用户能解开的方式加密保存在本机,不写进配置文件";
 
     private string? _expanded;
 

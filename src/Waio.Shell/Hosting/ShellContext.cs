@@ -66,7 +66,37 @@ internal sealed class ShellContext(
     public string DescribeCommand(CommandId id) =>
         manifests.SelectMany(m => m.Commands).FirstOrDefault(c => c.Id == id)?.Title ?? id.Value;
 
-    public void LoadSettings() => Settings = appSettingsStore.Load();
+    public void LoadSettings()
+    {
+        Settings = appSettingsStore.Load();
+        input.SetPassthroughApps(Settings.RemoteDesktop.ActiveApps());
+    }
+
+    // ---- 远程桌面让出按键(ADR-0033) ----
+
+    private bool _remoteDesktopActive;
+
+    /// <summary>修改远程桌面设置:写 app.json,立即生效。</summary>
+    public async Task SetRemoteDesktopAsync(bool enabled, IEnumerable<string> apps)
+    {
+        Settings.RemoteDesktop.Enabled = enabled;
+        Settings.RemoteDesktop.Apps = [.. RemoteDesktopSettings.Normalize(apps)];
+        input.SetPassthroughApps(Settings.RemoteDesktop.ActiveApps());
+        await appSettingsStore.SaveAsync(Settings).ConfigureAwait(true);
+    }
+
+    /// <summary>前台程序变化(前台跟踪线程上调用):远程桌面开始 / 结束时写日志,方便确认名单里的进程名对不对。</summary>
+    public void OnForegroundChanged(string? processName)
+    {
+        var apps = Settings.RemoteDesktop.ActiveApps();
+        var active = !string.IsNullOrEmpty(processName) && apps.Contains(processName, StringComparer.OrdinalIgnoreCase);
+        if (active != _remoteDesktopActive)
+        {
+            _remoteDesktopActive = active;
+            logger.LogInformation("远程桌面{State}:{Process}(快捷键和改键{Effect})",
+                active ? "在前台" : "离开前台", processName, active ? "已让出" : "恢复");
+        }
+    }
 
     /// <summary>某个功能当前的启用意图(用户开关)。</summary>
     public bool IsFeatureEnabled(FeatureManifest manifest) => Settings.IsEnabled(manifest);

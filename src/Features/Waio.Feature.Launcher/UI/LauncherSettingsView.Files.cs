@@ -44,15 +44,17 @@ internal sealed partial class LauncherSettingsView
             SettingsUi.Section("文件搜索"),
             SettingsUi.Card(
                 "全盘搜文件",
-                "为整个磁盘建立文件索引并实时更新,几百万个文件也能打字即出结果。需要以管理员身份运行",
+                SettingsUi.Lines("为整个磁盘建立文件索引并实时更新,几百万个文件也能打字即出结果", "需要以管理员身份运行"),
                 SettingsUi.Toggle(v.FileSearchEnabled, x => Save(s => s.FileSearchEnabled = x))),
             SettingsUi.Card("索引状态", null, actions),
             status,
             SettingsUi.Card(
-                "结果样式", "极简:每个文件一行(图标、名称、所在文件夹),一屏看到更多;详细:和应用一样两行。只影响文件和文件夹",
+                "结果样式",
+                SettingsUi.Lines("极简:每个文件一行(图标、名称、所在文件夹),一屏看到更多", "详细:和应用一样两行", "只影响文件和文件夹"),
                 SettingsUi.Choice(Styles, v.FileResultStyle, x => Save(s => s.FileResultStyle = x))),
             SettingsUi.Card(
-                "\"全部\"里最多显示几个文件", "想看更多按 Tab 切到\"文件\"(最多 300 个)。前缀 f + 空格 只搜文件,d + 空格 只搜文件夹",
+                "\"全部\"里最多显示几个文件",
+                SettingsUi.Lines("想看更多按 Tab 切到\"文件\"(最多 300 个)", "前缀 f + 空格 只搜文件,d + 空格 只搜文件夹"),
                 SettingsUi.Choice(FileCounts, Nearest(FileCounts, v.MaxFilesInAll), x => Save(s => s.MaxFilesInAll = x))),
             SettingsUi.Card(
                 "没有匹配的应用时自动切到\"文件\"", "找到了文件才切;应用和文件都没有时留在\"全部\"(网页搜索还在)。点\"全部\"可以切回来",

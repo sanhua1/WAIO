@@ -25,7 +25,12 @@ public sealed class TranslateFeature(IFeatureContext context) : IFeature
     public static FeatureManifest Manifest { get; } = new(
         "translate",
         "翻译",
-        "选中文字按 Win+T 翻译;没有选中时打开输入框。支持 Google、必应、DeepSeek 等多个翻译源同时翻译。",
+        """
+        选中文字就能翻译,多个翻译源同时给出结果:
+        选中文字按 Win+T 翻译;没有选中时打开输入框
+        支持 Google、必应、DeepSeek 等翻译源,结果并排对比
+        截图时按 Ctrl+T 可以直接翻译图片里的文字
+        """,
         "", // Segoe Fluent Icons: Characters
         Capability.Network,
         [

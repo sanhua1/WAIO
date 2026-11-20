@@ -108,7 +108,7 @@ internal sealed partial class SettingsWindow : Microsoft.UI.Xaml.Window
                 ContentFrame.Navigate(typeof(GeneralPage), _context, NoTransition);
                 break;
             case FeatureManifest manifest:
-                ContentFrame.Navigate(typeof(FeaturePage), new FeaturePageArgs(_context, manifest, () => Show("bindings")), NoTransition);
+                ContentFrame.Navigate(typeof(FeaturePage), new FeaturePageArgs(_context, manifest), NoTransition);
                 break;
         }
     }

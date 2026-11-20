@@ -12,18 +12,19 @@ namespace Waio.App;
 /// <summary>
 /// 全仓库<b>唯一</b>知道"所有功能"的地方(ARCHITECTURE §2)。
 /// 新增一个功能 = 新增一个项目 + 在这里加一行,不改任何已有功能的代码。
-/// 列表顺序就是激活顺序。
+/// 列表顺序就是激活顺序,也是设置窗口左栏和"WAIO 快捷键"页分组的顺序(按常用程度排)。
+/// 目前只有按键映射注册实时过滤器,顺序不影响按键处理;以后再有功能注册过滤器时要考虑串联顺序。
 /// </summary>
 internal static class FeatureCatalog
 {
     public static IReadOnlyList<FeatureDescriptor> All { get; } =
     [
-        SystemActionsFeature.Descriptor,
-        KeyMappingFeature.Descriptor,
+        LauncherFeature.Descriptor,
         ClipboardFeature.Descriptor,
         TranslateFeature.Descriptor,
         ScreenshotFeature.Descriptor,
-        LauncherFeature.Descriptor,
+        KeyMappingFeature.Descriptor,
+        SystemActionsFeature.Descriptor,
     ];
 
     /// <summary>

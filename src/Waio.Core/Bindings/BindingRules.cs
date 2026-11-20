@@ -75,7 +75,7 @@ public static class BindingRules
             else if (!(customModifiers ?? []).Contains(KeyNames.Canonicalize(hold)))
             {
                 issues.Add(new BindingIssue(
-                    BindingIssueLevel.Error, $"{hold.ToUpperInvariant()} 还不是自定义修饰键,先在\"快捷键\"页顶部把它加为自定义修饰键"));
+                    BindingIssueLevel.Error, $"{hold.ToUpperInvariant()} 还不是自定义修饰键,先在\"WAIO 快捷键\"页顶部把它加为自定义修饰键"));
             }
             else if (KeyNames.Canonicalize(hold) == KeyNames.Canonicalize(chord.Key))
             {
@@ -106,7 +106,7 @@ public static class BindingRules
         {
             issues.Add(system.CanOverride
                 ? new BindingIssue(BindingIssueLevel.Warning,
-                    $"{chord} 原本是系统快捷键「{system.Function}」:WAIO 运行时由 WAIO 接管,系统功能暂停;停用或删除这条快捷键后自动恢复")
+                    $"{chord} 与系统快捷键「{system.Function}」相同:保存后,WAIO 运行时按下只会触发 WAIO,系统的功能不会触发;停用、删除这条快捷键或退出 WAIO 后,系统快捷键恢复工作")
                 : new BindingIssue(BindingIssueLevel.Error,
                     $"{chord} 是系统保留快捷键「{system.Function}」,WAIO 接管不了({system.Note}),请换一个组合"));
         }

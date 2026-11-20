@@ -34,6 +34,9 @@ public sealed class AppSettings
     /// <summary>检查更新(ADR-0031)。</summary>
     public UpdateSettings Update { get; set; } = new();
 
+    /// <summary>远程桌面在前台时让出按键(ADR-0033)。</summary>
+    public RemoteDesktopSettings RemoteDesktop { get; set; } = new();
+
     /// <summary>
     /// 合法、去重、规范化后的自定义修饰键。只接受 F1–F24、CapsLock 等不用来打字的键——
     /// 手改 app.json 把字母设成修饰键会让打字变得别扭,直接忽略。
@@ -65,6 +68,9 @@ public sealed class AppSettingsStore(AppPaths paths, ILogger logger)
         settings.SeededBindings ??= [];
         settings.CustomModifiers ??= [];
         settings.Appearance ??= new AppearanceSettings();
+        settings.Update ??= new UpdateSettings();
+        settings.RemoteDesktop ??= new RemoteDesktopSettings();
+        settings.RemoteDesktop.Apps ??= [];
         return settings;
     }
 

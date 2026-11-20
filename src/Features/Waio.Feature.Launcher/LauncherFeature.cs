@@ -30,7 +30,12 @@ public sealed partial class LauncherFeature(IFeatureContext context) : IFeature
     public static FeatureManifest Manifest { get; } = new(
         "launcher",
         "启动台",
-        "Ctrl+空格 弹出搜索框:搜应用(支持拼音和首字母,常用的排前面)、全盘搜文件、网页搜索,Tab 切换来源",
+        """
+        一个搜索框打开一切:
+        按 Ctrl+空格 搜应用,拼音和首字母都行,常用的排前面
+        全盘搜文件和文件夹(直接读 NTFS 索引,结果即时出来)
+        g / bd + 空格 直接网页搜索;Tab 切换来源
+        """,
         "", // Segoe Fluent Icons: Search
         Capability.None,
         [

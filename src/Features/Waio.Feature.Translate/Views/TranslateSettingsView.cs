@@ -145,19 +145,24 @@ internal sealed partial class TranslateSettingsView
     private static class Help
     {
         public const string SelectionPosition =
-            "所选文字旁边:放在选中文字的下方,下方放不下时放上方。有些程序(例如部分浏览器、Electron 应用)不提供位置,这时放在鼠标处。上面的\"窗口位置\"只管直接打开输入框的情况。";
+            "所选文字旁边:放在选中文字的下方,下方放不下时放上方\n"
+            + "有些程序(例如部分浏览器、Electron 应用)不提供位置,这时放在鼠标处\n"
+            + "上面的\"窗口位置\"只管直接打开输入框的情况";
 
         public const string Behavior =
-            "有选中文字就翻译,否则打开输入框:最常用,一个快捷键搞定两种场景。只翻译选中的文字:没有选中文字时只提示,不打开窗口。"
-            + "读取选中文字时优先使用系统的辅助功能;读不到时(例如 Chrome、Electron 应用)会模拟一次 Ctrl+C,读完立即恢复剪贴板原来的内容,剪贴板历史也不会记录这次复制。";
+            "有选中文字就翻译,否则打开输入框:最常用,一个快捷键搞定两种场景\n"
+            + "只翻译选中的文字:没有选中文字时只提示,不打开窗口\n"
+            + "读取选中文字时优先用系统的辅助功能;读不到时(例如 Chrome、Electron 应用)模拟一次 Ctrl+C,读完立即恢复剪贴板,剪贴板历史也不记录这次复制";
 
-        public const string Target = "原文会被翻译成这个语言。窗口里的语言栏可以临时改成其他语言。";
+        public const string Target = "原文会被翻译成这个语言\n窗口里的语言栏可以临时改成其他语言";
 
-        public const string SecondTarget = "例如目标语言是中文时,选中中文会自动翻译成英文。原文语言在本机按文字识别,不联网。";
+        public const string SecondTarget = "例如目标语言是中文时,选中中文会自动翻译成英文\n原文语言在本机按文字识别,不联网";
 
         public const string LineBreaks =
-            "从 PDF、网页复制的文字常在句子中间断行,翻译质量会变差。打开后会把断开的行拼回完整段落,保留空行分隔的段落。窗口里也有手动删除换行的按钮。";
+            "从 PDF、网页复制的文字常在句子中间断行,翻译质量会变差\n"
+            + "打开后把断开的行拼回完整段落,保留空行分隔的段落\n"
+            + "窗口里也有手动删除换行的按钮";
 
-        public const string CloseOnBlur = "点击其他地方时自动关闭翻译窗口。点窗口右上角的图钉可以临时固定。";
+        public const string CloseOnBlur = "点击其他地方时自动关闭翻译窗口\n点窗口右上角的图钉可以临时固定";
     }
 }

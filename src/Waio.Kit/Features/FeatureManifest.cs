@@ -6,7 +6,7 @@ namespace Waio.Kit.Features;
 /// <summary>功能的静态元信息。宿主不实例化功能就能读取(设置页、冲突检测、绑定编辑器都靠它)。</summary>
 /// <param name="Id">全局唯一,永不改名。</param>
 /// <param name="DisplayName">界面显示名,如 "剪贴板"。</param>
-/// <param name="Summary">一句话说明。</param>
+/// <param name="Summary">说明。第一行一句话说用途;后面每行一个要点,设置页逐条显示。</param>
 /// <param name="IconGlyph">Segoe Fluent Icons 的字符码,如 ""。</param>
 /// <param name="RequiredCapabilities">运行所需的系统能力。</param>
 /// <param name="Commands">本功能提供的全部命令。注册时若不在此列表,宿主拒绝。</param>

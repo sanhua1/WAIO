@@ -80,6 +80,7 @@ public sealed class ShellHost : IAsyncDisposable
             new BindingStore(paths, loggers.CreateLogger("bindings")),
             new AppSettingsStore(paths, logger),
             launcher, new AutostartTask(logger), ui, settingsPages, hub, loggers);
+        foreground.ForegroundChanged += info => context.OnForegroundChanged(info.ProcessName);
         return new ShellHost(context, foreground, hud, clipboard, loggers, ui);
     }
 

@@ -30,7 +30,10 @@ internal static class ShortcutUi
         return context.DescriptorOf(binding.Command)?.Title ?? binding.Command.Value;
     }
 
-    /// <summary>第二行:功能名 · 命令名(打开程序显示完整路径),再加上生效范围。</summary>
+    /// <summary>
+    /// 第二行(参考 MAIO):功能名已经在组头上,不再重复;打开程序 / 网页显示完整路径,
+    /// 未知命令显示命令 id,再加上生效范围和提权提示。没什么要说的时候返回空串(行里只有一行标题)。
+    /// </summary>
     public static string Detail(ShellContext context, CommandBinding binding)
     {
         var parts = new List<string>();
@@ -42,9 +45,9 @@ internal static class ShortcutUi
         {
             parts.Add(url);
         }
-        else
+        else if (context.OwnerOf(binding.Command) is null)
         {
-            parts.Add($"{context.OwnerOf(binding.Command)?.DisplayName ?? "未知功能"} · {binding.Command}");
+            parts.Add($"{binding.Command}(提供它的功能不存在)");
         }
 
         if (binding.Scope is ProcessScope scope)
@@ -82,6 +85,25 @@ internal static class ShortcutUi
         return badge;
     }
 
+    /// <summary>分组标题(参考 MAIO 的 ShortcutGroupHeader):图标 + 名称 + 条数。功能组的图标用强调色。</summary>
+    public static StackPanel GroupHeader(string title, string glyph, int count, bool isFeature)
+    {
+        var header = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(4, 22, 0, 8) };
+        var icon = new FontIcon { Glyph = glyph, FontSize = 14 };
+        if (isFeature && Application.Current.Resources.TryGetValue("AccentTextFillColorPrimaryBrush", out var accent))
+        {
+            icon.Foreground = (Microsoft.UI.Xaml.Media.Brush)accent;
+        }
+
+        var name = SettingsUi.Section(title);
+        name.Margin = default;
+        var number = SettingsUi.Hint(count.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        header.Children.Add(icon);
+        header.Children.Add(name);
+        header.Children.Add(number);
+        return header;
+    }
+
     /// <summary>生效范围的说明,如"仅 code"、"除 game 外"。</summary>
     public static string ScopeText(ProcessScope scope) =>
         (scope.Exclude ? "除 " : "仅 ") + string.Join("、", scope.ProcessNames) + (scope.Exclude ? " 外" : "");
@@ -92,15 +114,15 @@ internal static class ShortcutUi
     public static (string Text, SettingsUi.Tone Tone, string Tip) SystemStatus(SystemShortcutUsage usage)
     {
         var s = usage.Shortcut;
-        var head = $"系统默认:{s.Function}({s.Category})" + (s.Note is { } note ? $"\n{note}" : "");
+        var head = $"这个组合原本是系统快捷键:{s.Function}({s.Category})" + (s.Note is { } note ? $"\n{note}" : "");
         return usage.State switch
         {
             SystemShortcutState.Clash => ("系统保留", SettingsUi.Tone.Critical,
                 head + "\nWAIO 接管不了这个组合:按下时系统功能照样触发。请换一个组合。"),
-            SystemShortcutState.PartlyTakenOver => ("系统快捷键", SettingsUi.Tone.Neutral,
-                head + "\n只在生效范围内的程序里由 WAIO 接管,其他程序里系统功能照常。"),
-            _ => ("系统快捷键", SettingsUi.Tone.Neutral,
-                head + "\nWAIO 运行时由 WAIO 接管,系统功能暂停;停用 / 删除这条快捷键或退出 WAIO 后自动恢复。"),
+            SystemShortcutState.PartlyTakenOver => ("部分接管系统快捷键", SettingsUi.Tone.Neutral,
+                head + "\n只在生效范围内的程序里只触发 WAIO,其他程序里系统功能照常。"),
+            _ => ("接管系统快捷键", SettingsUi.Tone.Neutral,
+                head + "\nWAIO 运行时按下只触发 WAIO;停用 / 删除这条快捷键或退出 WAIO 后,系统快捷键恢复工作。「系统快捷键」页列出了全部。"),
         };
     }
 
