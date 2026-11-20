@@ -174,7 +174,7 @@ public class OrderingTests
         presenter.OnQueryChanged("report");
 
         var open = presenter.ExecuteAsync(new LauncherAction(LauncherActionKind.Open));
-        await Task.Delay(50);
+        await Task.Yield(); // 回车已经在等了;不用真实延时(机器忙时 50 ms 的延时可能拖过 300 ms 的上限,测试偶发失败)
         gate.SetResult(); // 文件搜索在 300 ms 内完成
         await open;
 

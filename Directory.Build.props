@@ -7,6 +7,12 @@
     <WaioTfm Condition="'$(WaioTfm)' == ''">net10.0</WaioTfm>
     <!-- 需要 Windows API 的项目用这个;Waio.Kit 禁止使用(保持平台无关) -->
     <WaioWinTfm>$(WaioTfm)-windows10.0.19041.0</WaioWinTfm>
+    <!--
+      固定 Windows SDK 投影包(Microsoft.Windows.SDK.NET.Ref)的版本。不固定时由 .NET SDK 自带的版本决定:
+      新的 .NET SDK 带的 10.0.19041.87 加了 CsWinRT1032 分析器(集合表达式赋给只读接口,只影响裁剪 / AOT,WAIO 不裁剪),
+      在 TreatWarningsAsErrors 下直接构建失败——GitHub 的运行器镜像一更新,同样的代码就构建不过。固定后本机和 CI 一致。
+    -->
+    <WindowsSdkPackageVersion>10.0.19041.57</WindowsSdkPackageVersion>
 
     <!-- 产品版本:exe 文件版本和安装包版本都取这里(ADR-0031);发版时改这一处 -->
     <Version>0.1.0</Version>
