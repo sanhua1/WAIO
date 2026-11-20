@@ -175,14 +175,21 @@ public sealed class OcrTests : IDisposable
         Assert.Equal(2, text.Split('\n').Length);
     }
 
-    /// <summary>系统识别(模型缺失时的退路)还能用。系统没装任何识别组件时只检查报错内容。</summary>
+    /// <summary>
+    /// 系统识别(模型缺失时的退路)还能用。系统没装任何识别组件时只检查报错内容;
+    /// 只装了其他语言(如英文版 Windows / CI 机器)时只检查能跑通,认不出中文是正常的。
+    /// </summary>
     [Fact]
     public async Task 系统识别退路_能认出中文()
     {
         var image = ClipboardImage.RenderText("截图识别文字", 1);
         try
         {
-            Assert.Contains("截图识别文字", await TextRecognizer.RecognizeWithWindowsAsync(image));
+            var text = await TextRecognizer.RecognizeWithWindowsAsync(image);
+            if (Windows.Media.Ocr.OcrEngine.IsLanguageSupported(new Windows.Globalization.Language("zh-Hans")))
+            {
+                Assert.Contains("截图识别文字", text);
+            }
         }
         catch (TextRecognitionException ex)
         {
