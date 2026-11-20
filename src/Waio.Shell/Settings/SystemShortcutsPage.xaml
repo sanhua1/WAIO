@@ -1,0 +1,59 @@
+<Page
+    x:Class="Waio.Shell.Settings.SystemShortcutsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Windows 默认快捷键总表(ADR-0029):每个组合现在归系统还是归 WAIO,被占用的可以一键恢复 -->
+    <!-- 版式同 GeneralPage(靠左、最宽 920、焦点变化不自动滚动),见那里的说明 -->
+    <ScrollViewer BringIntoViewOnFocusChange="False">
+        <Grid Padding="36,28,36,40">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MaxWidth="920" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Spacing="4">
+            <TextBlock Text="系统快捷键" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock
+                Margin="0,2,0,12"
+                Text="Windows 自带的快捷键。WAIO 的快捷键用了其中某个组合时,WAIO 运行期间由 WAIO 接管、系统功能暂停;不再占用(停用、删除、功能关闭或退出 WAIO)就自动恢复。WAIO 不修改任何系统设置。"
+                TextWrapping="Wrap"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+            <InfoBar
+                x:Name="EngineBar"
+                Severity="Warning"
+                Title="快捷键服务没有运行"
+                Message="现在所有系统快捷键都照常生效。下面显示的是快捷键服务运行后的占用情况。"
+                IsClosable="False" />
+
+            <Grid ColumnSpacing="12" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <AutoSuggestBox
+                    x:Name="Search"
+                    PlaceholderText="搜索组合或功能,如 win+r、截图"
+                    QueryIcon="Find"
+                    TextChanged="OnSearchChanged" />
+                <ToggleSwitch
+                    x:Name="OnlyTaken"
+                    Grid.Column="1"
+                    OnContent="只看被 WAIO 占用的"
+                    OffContent="只看被 WAIO 占用的"
+                    Toggled="OnFilterChanged" />
+            </Grid>
+
+            <TextBlock x:Name="Summary" Margin="4,0,0,4" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+            <StackPanel x:Name="Groups" Spacing="4" />
+
+            <TextBlock
+                x:Name="EmptyText"
+                Margin="0,48"
+                HorizontalAlignment="Center"
+                Text="没有匹配的系统快捷键"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Visibility="Collapsed" />
+        </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

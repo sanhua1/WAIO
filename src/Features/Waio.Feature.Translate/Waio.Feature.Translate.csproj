@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- 只能引用 Waio.Kit / Waio.UI(由架构测试强制)。含翻译窗口和设置页(WinUI),所以是 Windows TFM + UseWinUI。 -->
+  <PropertyGroup>
+    <TargetFramework>$(WaioWinTfm)</TargetFramework>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Waio.Feature.Translate.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <ProjectReference Include="..\..\Waio.Kit\Waio.Kit.csproj" />
+    <ProjectReference Include="..\..\Waio.UI\Waio.UI.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    SDK 层:协议 + 值类型 + 跨功能契约。整个仓库最稳定的地基,改动须发 ADR。
+    硬规则(由 tests/Waio.Architecture.Tests 强制):
+      1. 不得引用任何 WAIO 项目
+      2. 不得使用 Windows TFM(保持平台无关,单测可在任何环境跑)
+      3. NuGet 依赖仅限 Microsoft.Extensions.Logging.Abstractions
+  -->
+  <PropertyGroup>
+    <TargetFramework>$(WaioTfm)</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+</Project>

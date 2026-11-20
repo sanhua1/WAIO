@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- 只能引用 Waio.Kit / Waio.UI(由架构测试强制)。截图遮罩、设置页是 WinUI,所以是 Windows TFM + UseWinUI。 -->
+  <PropertyGroup>
+    <TargetFramework>$(WaioWinTfm)</TargetFramework>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <!-- Win2D 的原生 DLL 由带 RID 的 App(win-x64)和测试项目带上;库本身是 AnyCPU -->
+    <Win2DWarnNoPlatform>false</Win2DWarnNoPlatform>
+    <!-- 录屏直接按 vtable 调用 Media Foundation / WASAPI 的 COM 接口(函数指针,ADR-0021) -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Waio.Feature.Screenshot.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" />
+    <ProjectReference Include="..\..\Waio.Kit\Waio.Kit.csproj" />
+    <ProjectReference Include="..\..\Waio.UI\Waio.UI.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- PP-OCRv5 模型由 scripts/fetch-ocr-models.ps1 下载(不进 git),随程序集放在输出目录的 Ocr 子目录(ADR-0019) -->
+    <None Include="Assets\Ocr\*" Link="Ocr\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- 启动台(ADR-0023)。只能引用 Waio.Kit / Waio.UI(由架构测试强制)。含 WinUI 面板,所以是 Windows TFM + UseWinUI。 -->
+  <PropertyGroup>
+    <TargetFramework>$(WaioWinTfm)</TargetFramework>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <!-- 应用目录、图标按 vtable 槽位直接调用 Shell 的 COM 接口(Infrastructure/ShellNative.cs) -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Waio.Feature.Launcher.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- 汉字拼音表:scripts/build-pinyin-table.ps1 从 Unicode Unihan 生成 -->
+    <EmbeddedResource Include="Assets\pinyin.txt" LogicalName="Waio.Feature.Launcher.pinyin.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <ProjectReference Include="..\..\Waio.Kit\Waio.Kit.csproj" />
+    <ProjectReference Include="..\..\Waio.UI\Waio.UI.csproj" />
+  </ItemGroup>
+</Project>

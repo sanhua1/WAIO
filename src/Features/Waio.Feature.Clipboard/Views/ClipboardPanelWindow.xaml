@@ -1,0 +1,241 @@
+<Window
+    x:Class="Waio.Feature.Clipboard.Views.ClipboardPanelWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Waio.Feature.Clipboard.Views"
+    Title="剪贴板">
+
+    <!--
+        设计:一块干净的毛玻璃面板,只有三部分——搜索栏、列表、底部提示,之间用一像素分隔线。
+        不用 ListView(它自带的焦点框、选中指示条、滚动条箭头都是"多余的那一圈"),行由自己绘制。
+    -->
+    <Grid x:Name="Root" PreviewKeyDown="OnPreviewKeyDown" PreviewKeyUp="OnPreviewKeyUp">
+        <Grid.Resources>
+            <!-- 搜索框去掉所有底色和描边(包括获得焦点时底部那条强调色线),看起来就是一行字 -->
+            <SolidColorBrush x:Key="TextControlBackground" Color="Transparent" />
+            <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent" />
+            <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent" />
+            <SolidColorBrush x:Key="TextControlBorderBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="Transparent" />
+            <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="Transparent" />
+            <Thickness x:Key="TextControlBorderThemeThickness">0</Thickness>
+            <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
+
+            <Style x:Key="KeyCap" TargetType="Border">
+                <Setter Property="CornerRadius" Value="4" />
+                <Setter Property="Padding" Value="5,1,5,2" />
+                <Setter Property="Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+            <Style x:Key="KeyCapText" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="11" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            </Style>
+            <Style x:Key="HintText" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="11" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorTertiaryBrush}" />
+            </Style>
+        </Grid.Resources>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="1" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="1" />
+            <RowDefinition Height="34" />
+        </Grid.RowDefinitions>
+
+        <!-- 搜索栏 -->
+        <Grid Padding="16,0,12,0" ColumnSpacing="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <FontIcon
+                Glyph="&#xE721;"
+                FontSize="14"
+                VerticalAlignment="Center"
+                Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+            <TextBox
+                x:Name="SearchBox"
+                Grid.Column="1"
+                Padding="0,6"
+                MinHeight="0"
+                FontSize="14"
+                VerticalAlignment="Center"
+                PlaceholderText="搜索剪贴板"
+                PlaceholderForeground="{ThemeResource TextFillColorTertiaryBrush}"
+                TextChanged="OnQueryChanged"
+                GotFocus="OnSearchGotFocus"
+                LostFocus="OnSearchLostFocus"
+                TextCompositionStarted="OnCompositionStarted"
+                TextCompositionEnded="OnCompositionEnded" />
+            <Border x:Name="SearchKeyHint" Grid.Column="2" Style="{StaticResource KeyCap}">
+                <TextBlock Text="Ctrl F" Style="{StaticResource KeyCapText}" />
+            </Border>
+        </Grid>
+
+        <Rectangle Grid.Row="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+        <!-- 列表:自绘的行,焦点在这里时上下键选择 -->
+        <ScrollViewer
+            x:Name="Scroller"
+            Grid.Row="2"
+            Padding="6"
+            IsTabStop="True"
+            UseSystemFocusVisuals="False"
+            VerticalScrollBarVisibility="Hidden"
+            HorizontalScrollBarVisibility="Disabled">
+            <ItemsRepeater
+                x:Name="Repeater"
+                ItemsSource="{x:Bind Rows}"
+                ElementPrepared="OnElementPrepared">
+                <ItemsRepeater.Layout>
+                    <StackLayout Spacing="2" />
+                </ItemsRepeater.Layout>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="local:ClipRow">
+                        <Grid
+                            Height="44"
+                            Background="Transparent"
+                            Tapped="OnRowTapped"
+                            PointerEntered="OnRowPointerEntered"
+                            PointerExited="OnRowPointerExited">
+                            <Grid.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Text="粘贴" Tag="{x:Bind}" Click="OnMenuPaste" />
+                                    <MenuFlyoutItem Text="粘贴为纯文本" Tag="{x:Bind}" Click="OnMenuPastePlain" />
+                                    <MenuFlyoutItem Text="复制到剪贴板(不粘贴)" Tag="{x:Bind}" Click="OnMenuCopy" />
+                                    <MenuFlyoutSeparator />
+                                    <MenuFlyoutItem Text="预览" Tag="{x:Bind}" Click="OnMenuPreview" />
+                                    <MenuFlyoutItem Text="{x:Bind PinText}" Tag="{x:Bind}" Click="OnMenuPin" />
+                                    <MenuFlyoutItem Text="删除" Tag="{x:Bind}" Click="OnMenuDelete" />
+                                </MenuFlyout>
+                            </Grid.ContextFlyout>
+
+                            <Border
+                                CornerRadius="6"
+                                Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                Visibility="{x:Bind SelectedVisibility, Mode=OneWay}" />
+                            <Border
+                                CornerRadius="6"
+                                Background="{ThemeResource SubtleFillColorTertiaryBrush}"
+                                Visibility="{x:Bind HoverVisibility, Mode=OneWay}" />
+                            <!-- 选中指示条(系统强调色),和 Windows 11 导航/列表的选中样式一致 -->
+                            <Border
+                                Width="3"
+                                Height="16"
+                                CornerRadius="1.5"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                Visibility="{x:Bind SelectedVisibility, Mode=OneWay}" />
+
+                            <Grid Padding="10,0,12,0" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="28" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- 类型图标;图片条目加载完换成缩略图 -->
+                                <Border
+                                    Width="28"
+                                    Height="28"
+                                    CornerRadius="5"
+                                    VerticalAlignment="Center"
+                                    Background="{ThemeResource SubtleFillColorSecondaryBrush}">
+                                    <Grid>
+                                        <FontIcon
+                                            Glyph="{x:Bind KindGlyph}"
+                                            FontSize="13"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Visibility="{x:Bind IconVisibility, Mode=OneWay}" />
+                                        <Image Source="{x:Bind Thumbnail, Mode=OneWay}" Stretch="UniformToFill" />
+                                    </Grid>
+                                </Border>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                                    <TextBlock
+                                        Text="{x:Bind Summary}"
+                                        FontSize="13"
+                                        MaxLines="1"
+                                        TextWrapping="NoWrap"
+                                        TextTrimming="CharacterEllipsis"
+                                        Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                    <TextBlock
+                                        Text="{x:Bind Meta}"
+                                        FontSize="11"
+                                        MaxLines="1"
+                                        TextWrapping="NoWrap"
+                                        TextTrimming="CharacterEllipsis"
+                                        Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <FontIcon
+                                        Glyph="&#xE840;"
+                                        FontSize="11"
+                                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                        Visibility="{x:Bind PinVisibility}" />
+                                    <TextBlock
+                                        Text="{x:Bind SlotText}"
+                                        FontSize="11"
+                                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                        Visibility="{x:Bind SlotVisibility}" />
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </ScrollViewer>
+
+        <StackPanel
+            x:Name="EmptyText"
+            Grid.Row="2"
+            Spacing="10"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Visibility="Collapsed">
+            <FontIcon Glyph="&#xE77F;" FontSize="26" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+            <TextBlock x:Name="EmptyMessage" Text="还没有记录" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+        </StackPanel>
+
+        <!-- 预览:占满列表区域 -->
+        <ScrollViewer
+            x:Name="PreviewHost"
+            Grid.Row="2"
+            Padding="16,12"
+            IsTabStop="True"
+            UseSystemFocusVisuals="False"
+            Visibility="Collapsed"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="10">
+                <Border x:Name="PreviewImageFrame" CornerRadius="6" HorizontalAlignment="Center" Visibility="Collapsed">
+                    <Image x:Name="PreviewImage" Stretch="Uniform" MaxHeight="230" />
+                </Border>
+                <TextBlock x:Name="PreviewText" FontSize="13" LineHeight="20" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <Rectangle Grid.Row="3" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+        <!-- 底部:左边状态,右边最常用的两个键 -->
+        <Grid Grid.Row="4" Padding="16,0,12,0">
+            <TextBlock x:Name="StatusText" Style="{StaticResource HintText}" />
+            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+                <TextBlock Text="粘贴" Style="{StaticResource HintText}" />
+                <Border Style="{StaticResource KeyCap}">
+                    <TextBlock Text="&#x23CE;" Style="{StaticResource KeyCapText}" />
+                </Border>
+                <TextBlock Text="预览" Margin="6,0,0,0" Style="{StaticResource HintText}" />
+                <Border Style="{StaticResource KeyCap}">
+                    <TextBlock Text="空格" Style="{StaticResource KeyCapText}" />
+                </Border>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

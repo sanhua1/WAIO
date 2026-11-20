@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 入口。只能引用 Kit、UI、Shell 和各 Feature(UI:登记各功能的设置页,ADR-0010)(由架构测试强制);不得引用 Core。 -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>$(WaioWinTfm)</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseWinUI>true</UseWinUI>
+    <!-- unpackaged + 自带 Windows App Runtime:用户机器不需要预装运行时 -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- exe 图标;同一文件也复制到输出目录,托盘和窗口从那里加载(scripts/build-icon.ps1 生成) -->
+    <ApplicationIcon>Assets\waio.ico</ApplicationIcon>
+    <AssemblyName>Waio</AssemblyName>
+    <!-- 自己写 Main:单实例/提权重启必须在 XAML 启动之前决策 -->
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\waio.ico" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <ProjectReference Include="..\Waio.Kit\Waio.Kit.csproj" />
+    <ProjectReference Include="..\Waio.UI\Waio.UI.csproj" />
+    <ProjectReference Include="..\Waio.Shell\Waio.Shell.csproj" />
+    <ProjectReference Include="..\Features\Waio.Feature.SystemActions\Waio.Feature.SystemActions.csproj" />
+    <ProjectReference Include="..\Features\Waio.Feature.KeyMapping\Waio.Feature.KeyMapping.csproj" />
+    <ProjectReference Include="..\Features\Waio.Feature.Clipboard\Waio.Feature.Clipboard.csproj" />
+    <ProjectReference Include="..\Features\Waio.Feature.Translate\Waio.Feature.Translate.csproj" />
+    <ProjectReference Include="..\Features\Waio.Feature.Screenshot\Waio.Feature.Screenshot.csproj" />
+    <ProjectReference Include="..\Features\Waio.Feature.Launcher\Waio.Feature.Launcher.csproj" />
+  </ItemGroup>
+
+</Project>
+

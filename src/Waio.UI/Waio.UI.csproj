@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- 共享 WinUI 3 设计系统与窗口工具。只能引用 Waio.Kit(由架构测试强制)。 -->
+  <PropertyGroup>
+    <TargetFramework>$(WaioWinTfm)</TargetFramework>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <!-- 自绘玻璃(ADR-0027)用 Win2D 做模糊;原生 DLL 由带 RID 的 App(win-x64)带上,库本身是 AnyCPU -->
+    <Win2DWarnNoPlatform>false</Win2DWarnNoPlatform>
+    <!-- 截屏会话的"无黄框"开关不在 19041 投影里,按 vtable 直接调用(ADR-0027) -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Waio.UI.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" />
+    <ProjectReference Include="..\Waio.Kit\Waio.Kit.csproj" />
+  </ItemGroup>
+</Project>

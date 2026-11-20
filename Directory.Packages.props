@@ -1,0 +1,25 @@
+<Project>
+  <!-- 中央包管理:所有 NuGet 版本只在这里声明。新增依赖须经 ADR 加入白名单(见 docs/ARCHITECTURE.md §11)。 -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 运行时依赖白名单 -->
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+    <!-- Core:锁屏返回/远程会话切换时重装键盘钩子(SessionSwitch 事件),微软官方包 -->
+    <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="8.0.0" />
+    <!-- UI / App:WinUI 3(ADR-0002)。只有 Waio.UI、Waio.Shell、Waio.App 可以引用 -->
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.6.5" />
+    <!-- 剪贴板历史存储(ADR-0009)。只有 Waio.Feature.Clipboard 引用 -->
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.14" />
+    <!-- 截图标注画布(ADR-0016):屏幕显示和输出用同一套 Direct2D 绘制。只有 Waio.Feature.Screenshot 引用 -->
+    <PackageVersion Include="Microsoft.Graphics.Win2D" Version="1.4.0" />
+    <!-- 截图识别文字(ADR-0019):跑 PP-OCRv5 模型(CPU)。只有 Waio.Feature.Screenshot 引用 -->
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.31.1" />
+
+    <!-- 测试 -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageVersion Include="xunit" Version="2.9.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+</Project>

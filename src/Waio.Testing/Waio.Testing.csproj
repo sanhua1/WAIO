@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- 所有服务接口的内存假实现,供功能单测使用。只能引用 Waio.Kit(由架构测试强制)。 -->
+  <PropertyGroup>
+    <TargetFramework>$(WaioTfm)</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Waio.Kit\Waio.Kit.csproj" />
+  </ItemGroup>
+</Project>

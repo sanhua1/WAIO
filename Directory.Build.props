@@ -1,0 +1,28 @@
+<Project>
+  <!--
+    全仓库统一的构建属性。目标框架只在这里定义一次(ADR-0001)。
+    本机只装了 .NET 8 SDK 时,可用 -p:WaioTfm=net8.0 临时验证,不要把它写进项目文件。
+  -->
+  <PropertyGroup>
+    <WaioTfm Condition="'$(WaioTfm)' == ''">net10.0</WaioTfm>
+    <!-- 需要 Windows API 的项目用这个;Waio.Kit 禁止使用(保持平台无关) -->
+    <WaioWinTfm>$(WaioTfm)-windows10.0.19041.0</WaioWinTfm>
+
+    <!-- 产品版本:exe 文件版本和安装包版本都取这里(ADR-0031);发版时改这一处 -->
+    <Version>0.1.0</Version>
+
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Deterministic>true</Deterministic>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <RootNamespace>$(MSBuildProjectName)</RootNamespace>
+
+    <!--
+      Win2D(ADR-0016;ADR-0027 起 Waio.UI 也用)经项目引用传到所有 WinUI 项目。库和测试项目是 AnyCPU,
+      原生 Microsoft.Graphics.Canvas.dll 由带 RID(win-x64)的 App 带上,所以统一关掉"未指定平台"的警告。
+    -->
+    <Win2DWarnNoPlatform>false</Win2DWarnNoPlatform>
+  </PropertyGroup>
+</Project>

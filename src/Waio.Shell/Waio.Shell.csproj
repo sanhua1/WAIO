@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- 组合根 + 宿主 UI:托盘、HUD、设置窗口。引用 Kit / UI / Core;不得引用任何 Feature(功能列表由 App 传入)。 -->
+  <PropertyGroup>
+    <TargetFramework>$(WaioWinTfm)</TargetFramework>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <ProjectReference Include="..\Waio.Kit\Waio.Kit.csproj" />
+    <ProjectReference Include="..\Waio.UI\Waio.UI.csproj" />
+    <ProjectReference Include="..\Waio.Core\Waio.Core.csproj" />
+  </ItemGroup>
+</Project>

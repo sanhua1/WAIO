@@ -1,0 +1,16 @@
+# .NET / VS
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.nupkg
+TestResults/
+artifacts/
+publish/
+
+# 本机配置
+*.local.props
+
+# 截图识别文字的模型:由 scripts/fetch-ocr-models.ps1 下载并校验
+src/Features/Waio.Feature.Screenshot/Assets/Ocr/

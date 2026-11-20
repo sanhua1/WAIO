@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(WaioTfm)</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Features\Waio.Feature.SystemActions\Waio.Feature.SystemActions.csproj" />
+    <ProjectReference Include="..\..\src\Waio.Testing\Waio.Testing.csproj" />
+  </ItemGroup>
+</Project>

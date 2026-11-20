@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    运行时:命令总线、功能宿主、输入引擎(唯一允许安装系统钩子的地方)、设置、存储、平台封装。
+    只能引用 Waio.Kit,不得引用 UI/Shell/任何 Feature(由架构测试强制)。
+  -->
+  <PropertyGroup>
+    <TargetFramework>$(WaioWinTfm)</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Waio.Kit\Waio.Kit.csproj" />
+    <PackageReference Include="Microsoft.Win32.SystemEvents" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- 输入管线等内部类型是纯逻辑,需要被单测直接覆盖 -->
+    <InternalsVisibleTo Include="Waio.Core.Tests" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(WaioWinTfm)</TargetFramework>
+    <!-- Win2D 原生 DLL 按平台发布,渲染测试需要它 -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Features\Waio.Feature.Screenshot\Waio.Feature.Screenshot.csproj" />
+    <ProjectReference Include="..\..\src\Waio.Testing\Waio.Testing.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    架构测试:用测试强制 docs/ARCHITECTURE.md 里的规则。
+    它不引用任何 WAIO 项目,只读 csproj 和源码文本,所以任何项目的依赖写错都会被它抓到。
+    测试失败 = 架构被破坏。要么改代码,要么先发 ADR 改规则,不允许悄悄绕过。
+  -->
+  <PropertyGroup>
+    <TargetFramework>$(WaioTfm)</TargetFramework>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,51 @@
+name: Release
+
+# 推送 v<版本> 标签(和 Directory.Build.props 的 Version 一致)→ 构建安装包 → 创建 GitHub Release。
+# 程序里的检查更新读 releases/latest,要求资产名为 WAIO-Setup-<版本>.exe,并用 GitHub 给的 SHA-256(另附 .sha256 文件)。
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: 标签和版本号一致
+        shell: pwsh
+        run: |
+          $version = (dotnet msbuild src/Waio.App/Waio.App.csproj -getProperty:Version -nologo).Trim()
+          if ("v$version" -ne "${{ github.ref_name }}") { throw "标签 ${{ github.ref_name }} 和 Directory.Build.props 的版本 $version 不一致" }
+
+      - name: 构建 + 全部测试
+        shell: pwsh
+        run: ./scripts/check.ps1
+
+      - name: 安装 Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: 打包安装包
+        shell: pwsh
+        run: ./scripts/build-installer.ps1
+
+      - name: 计算 SHA-256
+        shell: pwsh
+        run: |
+          $file = Get-Item artifacts/installer/WAIO-Setup-*.exe
+          $hash = (Get-FileHash $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          Set-Content -Path "$($file.FullName).sha256" -Value "$hash  $($file.Name)" -Encoding ascii -NoNewline
+
+      - name: 创建 Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" (Get-ChildItem artifacts/installer/WAIO-Setup-*).FullName `
+            --title "WAIO ${{ github.ref_name }}" --generate-notes
